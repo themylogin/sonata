@@ -17,7 +17,7 @@ import threading # searchfilter_toggle starts thread searchfilter_loop
 
 import gtk, pango, gobject
 
-import ui, misc, formatting
+import ui, misc, formatting, aimpheaders
 import mpdhelper as mpdh
 
 class Current(object):
@@ -31,6 +31,8 @@ class Current(object):
         self.update_statusbar = update_statusbar
         self.iterate_now = iterate_now
         self.libsearchfilter_get_style = libsearchfilter_get_style
+
+        self.aimp_headers = True
 
         self.currentdata = None
         self.filterbox_visible = False
@@ -110,10 +112,16 @@ class Current(object):
         # Initialize current playlist data and widget
         self.resizing_columns = False
         self.columnformat = self.config.currentformat.split("|")
-        self.currentdata = gtk.ListStore(*([int] + [str] * len(self.columnformat)))
+        if self.aimp_headers:
+            self.currentdata = gtk.ListStore(*([int] + [str] * len(self.columnformat) + [str]))
+        else:
+            self.currentdata = gtk.ListStore(*([int] + [str] * len(self.columnformat)))
         self.current.set_model(self.currentdata)
-        cellrenderer = gtk.CellRendererText()
-        cellrenderer.set_property("ellipsize", pango.ELLIPSIZE_END)
+        if self.aimp_headers:
+            cellrenderer = aimpheaders.CellRenderer()
+        else:
+            cellrenderer = gtk.CellRendererText()
+            cellrenderer.set_property("ellipsize", pango.ELLIPSIZE_END)
 
         num_columns = len(self.columnformat)
         if num_columns != len(self.config.columnwidths):
@@ -123,11 +131,14 @@ class Current(object):
         colnames = formatting.parse_colnames(
             self.config.currentformat)
         self.columns = [gtk.TreeViewColumn(name, cellrenderer,
-                markup=(i+1))
+                markup=(i+1), aimp_header=(len(self.columnformat)+1))
                 for i, name in enumerate(colnames)]
 
         for column, width in zip(self.columns,self.config.columnwidths):
-            column.set_sizing(gtk.TREE_VIEW_COLUMN_FIXED)
+            if self.aimp_headers:
+                column.set_sizing(gtk.TREE_VIEW_COLUMN_AUTOSIZE)
+            else:
+                column.set_sizing(gtk.TREE_VIEW_COLUMN_FIXED)
             # If just one column, we want it to expand with the tree, so don't set a
             # fixed_width; if multiple columns, size accordingly:
             if num_columns > 1:
@@ -139,7 +150,8 @@ class Current(object):
             column.connect('clicked', self.on_current_column_click)
             self.current.append_column(column)
 
-        self.current.set_fixed_height_mode(True)
+        if not self.aimp_headers:
+            self.current.set_fixed_height_mode(True)
         self.current.set_headers_visible(num_columns > 1 and self.config.show_header)
         self.current.set_headers_clickable(not self.filterbox_visible)
 
@@ -211,6 +223,8 @@ class Current(object):
                     items = [formatting.parse(part, track,
                                   True)
                          for part in self.columnformat]
+                    if self.aimp_headers:
+                        items += [""]
 
                     if pos < currlen:
                         # Update attributes for item:
@@ -242,6 +256,17 @@ class Current(object):
                     self.current.set_model(self.currentdata)
 
             self.current_update_skip = False
+
+            # Update AIMP headers
+            if len(self.current_songs) > 0:
+                self.currentdata.set_value(self.currentdata.get_iter(0), len(self.columnformat)+1, aimpheaders.by_filename(mpdh.get(self.current_songs[0], 'file')))
+                for i in range(1, len(self.current_songs)):
+                    this_header = aimpheaders.by_filename(mpdh.get(self.current_songs[i], 'file'))
+                    prev_header = aimpheaders.by_filename(mpdh.get(self.current_songs[i-1], 'file'))
+                    if this_header != prev_header:
+                        self.currentdata.set_value(self.currentdata.get_iter(i), len(self.columnformat)+1, this_header)
+                    else:
+                        self.currentdata.set_value(self.currentdata.get_iter(i), len(self.columnformat)+1, '')
 
             # Update statusbar time:
             self.total_time = 0
