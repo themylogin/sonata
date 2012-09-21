@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 """Sonata is a simple GTK+ client for the Music Player Daemon.
 """
 
