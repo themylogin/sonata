@@ -1236,11 +1236,16 @@ class Base(object):
                     move_to = int(self.status['song']) + 1
                 for item in items:
                     mpdh.call(self.client, 'add', item)
-                    if after_current:
+                mpdh.call(self.client, 'command_list_end')
+                if after_current:
+                    self.update_status()
+                    new_playlist_length = int(self.status['playlistlength'])
+                    mpdh.call(self.client, 'command_list_ok_begin')
+                    for i in range(move_from, new_playlist_length):
                         mpdh.call(self.client, 'move', str(move_from), str(move_to))
                         move_from += 1
                         move_to += 1
-                mpdh.call(self.client, 'command_list_end')
+                    mpdh.call(self.client, 'command_list_end')
             elif self.current_tab == self.TAB_PLAYLISTS:
                 model, selected = self.playlists_selection.get_selected_rows()
                 for path in selected:
