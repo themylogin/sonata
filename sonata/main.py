@@ -259,6 +259,7 @@ class Base(object):
             ('aboutmenu', None, _('_About...'), 'F1', None, self.on_about),
             ('tagmenu', None, _('_Edit Tags...'), '<Ctrl>t', None, self.on_tags_edit),
             ('addmenu', gtk.STOCK_ADD, _('_Add'), '<Ctrl>d', None, self.on_add_item),
+            ('addaftercurrentmenu', gtk.STOCK_CONVERT, _('Add after current'), '<Ctrl><Alt>d', None, self.on_add_after_current_item),
             ('replacemenu', gtk.STOCK_REDO, _('_Replace'), '<Ctrl>r', None, self.on_replace_item),
             ('add2menu', None, _('Add'), '<Shift><Ctrl>d', None, self.on_add_item_play),
             ('replace2menu', None, _('Replace'), '<Shift><Ctrl>r', None, self.on_replace_item_play),
@@ -326,6 +327,7 @@ class Base(object):
               </popup>
               <popup name="mainmenu">
                 <menuitem action="addmenu"/>
+                <menuitem action="addaftercurrentmenu"/>
                 <menuitem action="replacemenu"/>
                 <menu action="playaftermenu">
                   <menuitem action="add2menu"/>
@@ -1222,15 +1224,22 @@ class Base(object):
     def on_add_item_play(self, widget):
         self.on_add_item(widget, True)
 
-    def on_add_item(self, _widget, play_after=False):
+    def on_add_item(self, _widget, play_after=False, after_current=False):
         if self.conn:
             if play_after and self.status:
                 playid = self.status['playlistlength']
             if self.current_tab == self.TAB_LIBRARY:
                 items = self.library.get_path_child_filenames(True)
                 mpdh.call(self.client, 'command_list_ok_begin')
+                if after_current:
+                    move_from = int(self.status['playlistlength'])
+                    move_to = int(self.status['song']) + 1
                 for item in items:
                     mpdh.call(self.client, 'add', item)
+                    if after_current:
+                        mpdh.call(self.client, 'move', str(move_from), str(move_to))
+                        move_from += 1
+                        move_to += 1
                 mpdh.call(self.client, 'command_list_end')
             elif self.current_tab == self.TAB_PLAYLISTS:
                 model, selected = self.playlists_selection.get_selected_rows()
@@ -1249,6 +1258,10 @@ class Base(object):
                     mpdh.call(self.client, 'play')
                 else:
                     mpdh.call(self.client, 'play', int(playid))
+
+    def on_add_after_current_item(self, _widget):
+        self.on_add_item(_widget, after_current=True)
+
     def add_selected_to_playlist(self, plname):
         if self.current_tab == self.TAB_LIBRARY:
             songs = self.library.get_path_child_filenames(True)
