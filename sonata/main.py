@@ -53,7 +53,7 @@ if 'SUGAR_BUNDLE_PATH' in os.environ:
 
 import mpdhelper as mpdh
 
-import misc, ui, img, tray, formatting
+import misc, ui, img, tray, formatting, aimpheaders
 
 from consts import consts
 from pluginsystem import pluginsystem
@@ -259,7 +259,8 @@ class Base(object):
             ('aboutmenu', None, _('_About...'), 'F1', None, self.on_about),
             ('tagmenu', None, _('_Edit Tags...'), '<Ctrl>t', None, self.on_tags_edit),
             ('addmenu', gtk.STOCK_ADD, _('_Add'), '<Ctrl>d', None, self.on_add_item),
-            ('addaftercurrentmenu', gtk.STOCK_CONVERT, _('Add after current'), '<Ctrl><Alt>d', None, self.on_add_after_current_item),
+            ('addaftercurrentitemmenu', gtk.STOCK_CONVERT, _('Add After Current Track'), '<Ctrl><Alt>d', None, self.on_add_after_current_item),
+            ('addaftercurrentalbummenu', gtk.STOCK_CONVERT, _('Add After Current Album'), '<Ctrl><Shift>d', None, self.on_add_after_current_album),
             ('replacemenu', gtk.STOCK_REDO, _('_Replace'), '<Ctrl>r', None, self.on_replace_item),
             ('add2menu', None, _('Add'), '<Shift><Ctrl>d', None, self.on_add_item_play),
             ('replace2menu', None, _('Replace'), '<Shift><Ctrl>r', None, self.on_replace_item_play),
@@ -327,7 +328,8 @@ class Base(object):
               </popup>
               <popup name="mainmenu">
                 <menuitem action="addmenu"/>
-                <menuitem action="addaftercurrentmenu"/>
+                <menuitem action="addaftercurrentitemmenu"/>
+                <menuitem action="addaftercurrentalbummenu"/>
                 <menuitem action="replacemenu"/>
                 <menu action="playaftermenu">
                   <menuitem action="add2menu"/>
@@ -1224,20 +1226,30 @@ class Base(object):
     def on_add_item_play(self, widget):
         self.on_add_item(widget, True)
 
-    def on_add_item(self, _widget, play_after=False, after_current=False):
+    def on_add_item(self, _widget, play_after=False, after_current_item=False, after_current_album=False):
         if self.conn:
             if play_after and self.status:
                 playid = self.status['playlistlength']
             if self.current_tab == self.TAB_LIBRARY:
-                items = self.library.get_path_child_filenames(True)
-                mpdh.call(self.client, 'command_list_ok_begin')
-                if after_current:
+                if after_current_item:
                     move_from = int(self.status['playlistlength'])
                     move_to = int(self.status['song']) + 1
+                elif after_current_album:                    
+                    move_from = int(self.status['playlistlength'])
+
+                    get_header = lambda i: aimpheaders.by_filename(mpdh.get(self.current.current_songs[i], 'file'))
+                    current_song = int(self.status['song'])
+                    current_song_header = get_header(current_song)
+                    move_to = current_song + 1
+                    while move_to < len(self.current.current_songs) and aimpheaders.by_filename(mpdh.get(self.current.current_songs[move_to], 'file')) == current_song_header:
+                        move_to += 1
+                        
+                items = self.library.get_path_child_filenames(True)
+                mpdh.call(self.client, 'command_list_ok_begin')
                 for item in items:
                     mpdh.call(self.client, 'add', item)
                 mpdh.call(self.client, 'command_list_end')
-                if after_current:
+                if after_current_item or after_current_album:
                     self.update_status()
                     new_playlist_length = int(self.status['playlistlength'])
                     mpdh.call(self.client, 'command_list_ok_begin')
@@ -1265,7 +1277,10 @@ class Base(object):
                     mpdh.call(self.client, 'play', int(playid))
 
     def on_add_after_current_item(self, _widget):
-        self.on_add_item(_widget, after_current=True)
+        self.on_add_item(_widget, after_current_item=True)
+
+    def on_add_after_current_album(self, _widget):
+        self.on_add_item(_widget, after_current_album=True)
 
     def add_selected_to_playlist(self, plname):
         if self.current_tab == self.TAB_LIBRARY:
