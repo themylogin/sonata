@@ -236,7 +236,12 @@ class Current(object):
                         for index in range(len(items)):
                             if items[index] != self.currentdata.get_value(i, index + 1):
                                 self.currentdata.set_value(i, index + 1, items[index])
-                        self.current_songs[pos] = track
+                        if pos < len(self.current_songs):
+                            self.current_songs[pos] = track
+                        elif pos == len(self.current_songs):
+                            self.current_songs.append(track)
+                        else:
+                            raise Exception
                     else:
                         # Add new item:
                         self.currentdata.append([mpdh.get(track, 'id', 0, True)] + items)
