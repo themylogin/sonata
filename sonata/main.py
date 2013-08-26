@@ -3028,7 +3028,7 @@ class Base(object):
 
     def update_menu_visibility(self, show_songinfo_only=False):
         if show_songinfo_only or not self.config.expanded:
-            for menu in ['add', 'replace', 'playafter', 'rename', 'rm', 'pl', \
+            for menu in ['add', 'addaftercurrentitem', 'addaftercurrentalbum', 'replace', 'playafter', 'rename', 'rm', 'pl', \
                         'remove', 'clear', 'update', 'new', 'edit', 'sort', 'tag']:
                 self.UIManager.get_widget('/mainmenu/' + menu + 'menu/').hide()
             return
@@ -3049,21 +3049,21 @@ class Base(object):
             else:
                 for menu in ['clear', 'pl', 'sort', 'remove', 'tag']:
                     self.UIManager.get_widget('/mainmenu/' + menu + 'menu/').hide()
-            for menu in ['add', 'replace', 'playafter', 'rename', 'rm', \
+            for menu in ['add', 'addaftercurrentitem', 'addaftercurrentalbum', 'replace', 'playafter', 'rename', 'rm', \
                          'update', 'new', 'edit']:
                 self.UIManager.get_widget('/mainmenu/' + menu + 'menu/').hide()
         elif self.current_tab == self.TAB_LIBRARY:
             if len(self.librarydata) > 0:
                 if self.library_selection.count_selected_rows() > 0:
-                    for menu in ['add', 'replace', 'playafter', 'tag', 'pl']:
+                    for menu in ['add', 'addaftercurrentitem', 'addaftercurrentalbum', 'replace', 'playafter', 'tag', 'pl']:
                         self.UIManager.get_widget('/mainmenu/' + menu + 'menu/').show()
                     self.UIManager.get_widget('/mainmenu/updatemenu/updateselectedmenu/').show()
                 else:
-                    for menu in ['add', 'replace', 'playafter', 'tag', 'pl']:
+                    for menu in ['add', 'addaftercurrentitem', 'addaftercurrentalbum', 'replace', 'playafter', 'tag', 'pl']:
                         self.UIManager.get_widget('/mainmenu/' + menu + 'menu/').hide()
                     self.UIManager.get_widget('/mainmenu/updatemenu/updateselectedmenu/').hide()
             else:
-                for menu in ['add', 'replace', 'playafter', 'tag', 'update', 'pl']:
+                for menu in ['add', 'addaftercurrentitem', 'addaftercurrentalbum', 'replace', 'playafter', 'tag', 'update', 'pl']:
                     self.UIManager.get_widget('/mainmenu/' + menu + 'menu/').hide()
             for menu in ['remove', 'clear', 'rename', 'rm', 'new', 'edit', 'sort']:
                 self.UIManager.get_widget('/mainmenu/' + menu + 'menu/').hide()
@@ -3074,14 +3074,14 @@ class Base(object):
                 self.UIManager.get_widget('/mainmenu/updatemenu/updatefullmenu/').show()
         elif self.current_tab == self.TAB_PLAYLISTS:
             if self.playlists_selection.count_selected_rows() > 0:
-                for menu in ['add', 'replace', 'playafter', 'rm']:
+                for menu in ['add', 'addaftercurrentitem', 'addaftercurrentalbum', 'replace', 'playafter', 'rm']:
                     self.UIManager.get_widget('/mainmenu/' + menu + 'menu/').show()
                 if self.playlists_selection.count_selected_rows() == 1 and mpdh.mpd_major_version(self.client) >= 0.13:
                     self.UIManager.get_widget('/mainmenu/renamemenu/').show()
                 else:
                     self.UIManager.get_widget('/mainmenu/renamemenu/').hide()
             else:
-                for menu in ['add', 'replace', 'playafter', 'rm', 'rename']:
+                for menu in ['add', 'addaftercurrentitem', 'addaftercurrentalbum', 'replace', 'playafter', 'rm', 'rename']:
                     self.UIManager.get_widget('/mainmenu/' + menu + 'menu/').hide()
             for menu in ['remove', 'clear', 'pl', 'update', 'new', 'edit', 'sort', 'tag']:
                 self.UIManager.get_widget('/mainmenu/' + menu + 'menu/').hide()
@@ -3092,10 +3092,10 @@ class Base(object):
                     self.UIManager.get_widget('/mainmenu/editmenu/').show()
                 else:
                     self.UIManager.get_widget('/mainmenu/editmenu/').hide()
-                for menu in ['add', 'replace', 'playafter', 'rm']:
+                for menu in ['add', 'addaftercurrentitem', 'addaftercurrentalbum', 'replace', 'playafter', 'rm']:
                     self.UIManager.get_widget('/mainmenu/' + menu + 'menu/').show()
             else:
-                for menu in ['add', 'replace', 'playafter', 'rm']:
+                for menu in ['add', 'addaftercurrentitem', 'addaftercurrentalbum', 'replace', 'playafter', 'rm']:
                     self.UIManager.get_widget('/mainmenu/' + menu + 'menu/').hide()
             for menu in ['rename', 'remove', 'clear', 'pl', 'update', 'sort', 'tag']:
                 self.UIManager.get_widget('/mainmenu/' + menu + 'menu/').hide()
