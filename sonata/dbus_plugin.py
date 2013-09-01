@@ -23,7 +23,8 @@ import sys
 try:
     import dbus, dbus.service
     if getattr(dbus, "version", (0, 0, 0)) >= (0, 41, 0):
-        import dbus.glib
+        from dbus.mainloop.glib import DBusGMainLoop
+        DBusGMainLoop(set_as_default=True)
     if getattr(dbus, "version", (0, 0, 0)) >= (0, 80, 0):
         import _dbus_bindings as dbus_bindings
         NEW_DBUS = True
