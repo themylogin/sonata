@@ -998,7 +998,7 @@ class Base(object):
                         self.repeatmenu.set_active(self.status['repeat'] == '1')
                     if not self.last_random or self.last_random != self.status['random']:
                         self.randommenu.set_active(self.status['random'] == '1')
-                    if self.status['xfade'] == '0':
+                    if self.status.get('xfade', '0') == '0':
                         self.config.xfade_enabled = False
                     else:
                         self.config.xfade_enabled = True
