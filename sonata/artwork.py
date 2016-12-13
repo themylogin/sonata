@@ -1,6 +1,8 @@
 from __future__ import with_statement
 import os
 import threading # artwork_update starts a thread _artwork_update
+import urllib
+import urllib2
 
 import gtk, gobject
 
@@ -338,20 +340,22 @@ class Artwork(object):
             # Normal song:
             artist = mpdh.get(self.songinfo, 'artist', "")
             album = mpdh.get(self.songinfo, 'album', "")
-            path = os.path.dirname(mpdh.get(self.songinfo, 'file'))
+            filepath = mpdh.get(self.songinfo, 'file')
+            path = os.path.dirname(filepath)
             if len(artist) == 0 and len(album) == 0:
                 self.artwork_set_default_icon(artist, album, path)
                 return
-            filename = self.target_image_filename()
-            if filename == self.lastalbumart:
-                # No need to update..
-                self.stop_art_update = False
-                return
-            self.lastalbumart = None
-            imgfound = self.artwork_check_for_local(artist, album, path)
-            if not imgfound:
-                if self.config.covers_pref == consts.ART_LOCAL_REMOTE:
-                    imgfound = self.artwork_check_for_remote(artist, album, path, filename)
+            try:
+                response = urllib2.urlopen('http://player.thelogin.ru/cover-for-file/%s' %\
+                    urllib.quote(filepath))
+                headers = response.info()
+                filename = headers.get("X-Cover-Path")
+                if filename:
+                    filename = os.path.join(self.config.musicdir[self.config.profile_num], filename)
+                    gobject.idle_add(self.artwork_set_image, filename, artist, album, path)
+            except Exception:
+                pass
+
 
     def artwork_stream_filename(self, streamname):
         return os.path.join(os.path.expanduser('~/.covers'),
@@ -444,7 +448,10 @@ class Artwork(object):
 
     def artwork_set_image(self, filename, artist, album, path, info_img_only=False):
         # Note: filename arrives here is in FILESYSTEM_CHARSET, not UTF-8!
-        if self.artwork_is_for_playing_song(filename):
+        if (self.status_is_play_or_pause() and
+                self.songinfo and
+                self.songinfo.get('artist') == artist and
+                self.songinfo.get('album') == album):
             if os.path.exists(filename):
 
                 # We use try here because the file might exist, but might
