@@ -504,7 +504,7 @@ class Base(object):
         self.imageeventbox.drag_dest_set(gtk.DEST_DEFAULT_HIGHLIGHT | gtk.DEST_DEFAULT_DROP, [("text/uri-list", 0, 80), ("text/plain", 0, 80)], gtk.gdk.ACTION_DEFAULT)
         if not self.config.show_covers:
             ui.hide(self.imageeventbox)
-        tophbox.pack_start(self.imageeventbox, False, False, 5)
+        tophbox.pack_start(self.imageeventbox, False, False, 0)
         topvbox = gtk.VBox()
         toptophbox = gtk.HBox()
         self.prevbutton = ui.button(stock=gtk.STOCK_MEDIA_PREVIOUS, relief=gtk.RELIEF_NONE, can_focus=False, hidetxt=True)
@@ -512,7 +512,7 @@ class Base(object):
         self.stopbutton = ui.button(stock=gtk.STOCK_MEDIA_STOP, relief=gtk.RELIEF_NONE, can_focus=False, hidetxt=True)
         self.nextbutton = ui.button(stock=gtk.STOCK_MEDIA_NEXT, relief=gtk.RELIEF_NONE, can_focus=False, hidetxt=True)
         for mediabutton in (self.prevbutton, self.ppbutton, self.stopbutton, self.nextbutton):
-            toptophbox.pack_start(mediabutton, False, False, 0)
+            toptophbox.pack_start(mediabutton, False, False, 5)
             if not self.config.show_playback:
                 ui.hide(mediabutton)
         self.progressbox = gtk.VBox()
@@ -523,7 +523,7 @@ class Base(object):
         self.progressbox.pack_start(self.progresseventbox, False, False, 0)
         self.progresslabel2 = ui.label(w=-1, h=6)
         self.progressbox.pack_start(self.progresslabel2)
-        toptophbox.pack_start(self.progressbox, True, True, 0)
+        toptophbox.pack_start(self.progressbox, True, True, 5)
         if not self.config.show_progress:
             ui.hide(self.progressbox)
         self.volumebutton = gtk.VolumeButton()
@@ -541,11 +541,11 @@ class Base(object):
         self.expander.set_label_widget(expanderbox)
         topvbox.pack_start(self.expander, False, False, 2)
         tophbox.pack_start(topvbox, True, True, 3)
-        mainvbox.pack_start(tophbox, False, False, 5)
+        mainvbox.pack_start(tophbox, False, False, 0)
         self.notebook.set_tab_pos(gtk.POS_TOP)
         self.notebook.set_scrollable(True)
 
-        mainvbox.pack_start(self.notebook, True, True, 5)
+        mainvbox.pack_start(self.notebook, True, True, 3)
 
         self.statusbar = gtk.Statusbar()
         self.statusbar.set_has_resize_grip(True)
