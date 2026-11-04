@@ -12,6 +12,9 @@ def suppress_mpd_errors(val):
 def status(client):
     result = call(client, 'status')
     if result and 'state' in result:
+        # Newer MPD omits these fields when crossfade or the mixer is unavailable.
+        result.setdefault('xfade', '0')
+        result.setdefault('volume', '-1')
         return result
     else:
         return {}

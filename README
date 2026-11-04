@@ -28,6 +28,16 @@ RUNNING:
 INSTALLATION:
 	Run 'python setup.py install' as root.
 
+NIX (x86_64 Linux / WSL):
+	With Nix flakes enabled, run Sonata from this directory:
+
+	    nix run
+
+	To run from source in a development environment:
+
+	    nix develop # Or use direnv
+	    python sonata.py
+
 FEATURES:
 	+ Expanded and collapsed views, fullscreen album art mode
 	+ Automatic remote and local album art

@@ -6,3 +6,5 @@ mo/
 tags
 TAGS
 cscope*
+.direnv
+result
